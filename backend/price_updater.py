@@ -1,4 +1,4 @@
-import pandas as pd
+'''import pandas as pd
 import yfinance as yf
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -91,4 +91,59 @@ for symbol in symbols:
     except Exception as e:
         print(f"❌ Error {symbol}: {e}")
 
-print("\n🎉 PRICE UPDATE COMPLETED SUCCESSFULLY")
+print("\n🎉 PRICE UPDATE COMPLETED SUCCESSFULLY")'''
+import pandas as pd
+import yfinance as yf
+import firebase_admin
+from firebase_admin import credentials, firestore
+import time
+
+# ---------------- FIREBASE ----------------
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+# ---------------- LOAD SYMBOLS ----------------
+df = pd.read_csv("nse_symbols.csv")
+
+df.columns = df.columns.str.strip().str.upper()
+symbol_col = [c for c in df.columns if "SYMBOL" in c][0]
+
+symbols = (
+    df[symbol_col]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .unique()
+)
+
+# Add .NS
+symbols = [s if s.endswith(".NS") else s + ".NS" for s in symbols]
+
+print(f"📊 TOTAL SYMBOLS: {len(symbols)}")
+
+# ---------------- UPDATE LIVE PRICES ----------------
+for symbol in symbols:
+    try:
+        ticker = yf.Ticker(symbol)
+
+        # ✅ LIVE PRICE (THIS IS THE KEY)
+        price = ticker.info.get("regularMarketPrice")
+
+        if price is None:
+            print(f"⚠ No live price for {symbol}")
+            continue
+
+        db.collection("stock_prices").document(symbol.replace(".NS", "")).set({
+            "symbol": symbol.replace(".NS", ""),
+            "price": round(float(price), 2),
+            "updated_at": firestore.SERVER_TIMESTAMP
+        })
+
+        print(f"✔ {symbol} → ₹{price}")
+        time.sleep(0.5)
+
+    except Exception as e:
+        print(f"❌ {symbol}: {e}")
+
+print("\n🎉 LIVE PRICE UPDATE COMPLETED")

@@ -2,22 +2,28 @@
 <html>
 <head>
   <title>Buy Stocks</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="buy.css">
 </head>
 <body>
-  <h2>💰 Buy Stocks</h2>
+  <nav class="navbar">
+    <h1 class="nav-title">📈 Buy Stocks</h1>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="navigate('home')">Back</button>
+      <button class="nav-btn logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
   <input id="amount" placeholder="Enter amount">
   <button onclick="getBuySuggestions()">Get Suggestions</button>
-
-  <h3>🏆 Top 2 Picks</h3>
+  <h3 id="topHeading" class="hidden">🏆 Top 2 Picks</h3>
   <div id="top-picks" class="cards-container"></div>
-
-  <h3>Other Suggestions</h3>
+  <h3 id="otherHeading" class="hidden">Other Suggestions</h3>
   <div id="suggestions" class="cards-container"></div>
-
-  <br>
-  <button onclick="navigate('home')">⬅ Back to Home</button>
-
   <script src="script.js"></script>
+  <script>
+  function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+  </script>
 </body>
 </html>
